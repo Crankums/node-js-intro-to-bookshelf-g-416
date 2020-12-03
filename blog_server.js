@@ -16,9 +16,16 @@ const bookshelf = require('bookshelf')(knex);
 
 // This is a good place to start!
 
+const User = bookshelf.Model.extend({
+  tableName: 'users'
+})
 
+const Posts = bookshelf.Model.extend({
+  tableName: 'posts'
+})
 
-
+exports.User = User
+exports.Posts = Posts
 // Exports for Server hoisting.
 const listen = (port) => {
   return new Promise((resolve, reject) => {
