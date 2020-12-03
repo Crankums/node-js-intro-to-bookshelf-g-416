@@ -96,6 +96,38 @@ app.get('/posts', (req, res) => {
       res.sendStatus(500)
     }); 
 });
+
+app.get('/post/:id', (req, res) => {
+  Posts
+    .forge({id: req.params.id})
+    .fetch({withRelated: ['author', 'comments']})
+    .then((post) => {
+      if (_.isEmpty(post)) {
+        return res.sendStatus(404);
+      }
+      res.send(post);
+    })
+    .catch((error) => {
+      console.error(error);
+      return res.sendStatus(500);
+    });
+});
+
+app.post('/post', (req, res) => {
+  if (_.isEmpty(req.body)) {
+    return res.sendStatus(400);
+  }
+  Posts
+    .forge(req.body)
+    .save()
+    .then((post) => {
+      res.send({id: post.id});
+    })
+    .catch((error) => {
+      console.error(error);
+      return res.sendStatus(500);
+    });
+});
 // Exports for Server hoisting.
 const listen = (port) => {
   return new Promise((resolve, reject) => {
