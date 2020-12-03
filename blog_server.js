@@ -17,15 +17,85 @@ const bookshelf = require('bookshelf')(knex);
 // This is a good place to start!
 
 const User = bookshelf.Model.extend({
-  tableName: 'users'
-})
+  tableName: 'users',
+  hasTimestamps: true,
+  posts: function() {
+    return this.hasMany(Posts, 'author');
+  },
+  comments: function() {
+    return this.hasMany(Comments)
+  }
+});
 
 const Posts = bookshelf.Model.extend({
-  tableName: 'posts'
-})
+  tableName: 'posts',
+  hasTimestamps: true,
+  author: function() {
+    return this.belongsTo(User, 'author');
+  },
+  comments: function() {
+    return this.hasMany(Comments);
+  },
+});
+
+const Comments = bookshelf.Model.extend({
+  tableName: 'comments',
+  hasTimestamps: true,
+  user: function() {
+    return this.belongsTo(User);
+  },
+  post: function() {
+    return this.belongsTo(Posts)
+  },
+});
 
 exports.User = User
 exports.Posts = Posts
+exports.Comments = Comments
+
+app.get('/user/:id', (req,res) => {
+  User
+    .forge({id: req.params.id})
+    .fetch()
+    .then((usr) => {
+      if (_.isEmpty(usr)) {
+        return res.sendStatus(404);
+      }
+      res.send(usr);
+    })
+    .catch((error) => {
+      console.error(error);
+      return res.sendStatus(500);
+    });
+});
+
+app.post('/user', (req, res) => {
+  if (_.isEmpty(req.body)) {
+    return res.sendStatus(400);
+  }
+  User
+    .forge(req.body)
+    .save()
+    .then((usr) => {
+      res.send({id: usr.id});
+    })
+    .catch((error) => {
+      console.error(error);
+      return res.sendStatus(500);
+    });
+});
+
+app.get('/posts', (req, res) => {
+  Posts
+    .collection()
+    .fetch()
+    .then((posts) => {
+      res.send(posts)
+    })
+    .catch((error) => {
+      res.sendStatus(500)
+    }); 
+});
 // Exports for Server hoisting.
 const listen = (port) => {
   return new Promise((resolve, reject) => {
