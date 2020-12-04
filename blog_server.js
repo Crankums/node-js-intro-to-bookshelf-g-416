@@ -59,7 +59,7 @@ app.get('/user/:id', (req,res) => {
     .fetch()
     .then((usr) => {
       if (_.isEmpty(usr)) {
-        return res.sendStatus(404);
+        return res.sendStatus(400);
       }
       res.send(usr);
     })
@@ -103,7 +103,7 @@ app.get('/post/:id', (req, res) => {
     .fetch({withRelated: ['author', 'comments']})
     .then((post) => {
       if (_.isEmpty(post)) {
-        return res.sendStatus(404);
+        return res.sendStatus(400);
       }
       res.send(post);
     })
@@ -128,6 +128,24 @@ app.post('/post', (req, res) => {
       return res.sendStatus(500);
     });
 });
+
+app.post('/comment', (req, res) => {
+  if(_.isEmpty(req.body)) {
+    return res.sendStatus(400)
+  }
+  Comments
+    .forge(req.body)
+    .save()
+    .then((comment) => {
+      res.send({id: comment.id})
+    })
+    .catch((error) => {
+      console.error(error)
+      return res.sendStatus(500)
+    });
+});
+
+
 // Exports for Server hoisting.
 const listen = (port) => {
   return new Promise((resolve, reject) => {
